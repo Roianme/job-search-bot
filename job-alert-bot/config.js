@@ -6,13 +6,14 @@ module.exports = {
     chatId: process.env.TELEGRAM_CHAT_ID,
   },
   schedule: {
-    cronExpression: '0 8 * * *',
+    // Run every 4 hours at minute 0
+    cronExpression: '0 */4 * * *',
   },
   sources: {
     rss: [
       'https://weworkremotely.com/categories/remote-programming-jobs.rss',
       'https://jobspresso.co/feed/',
-      'https://www.workingnomads.co/jobs/feed',
+    //   'https://www.workingnomads.co/jobs/feed',
     ],
     remoteOk: {
       enabled: true,

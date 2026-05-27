@@ -1,4 +1,4 @@
-const Database = require('better-sqlite3');
+const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 const config = require('../../config');
 
@@ -8,10 +8,9 @@ function getDb() {
   if (_db) return _db;
 
   const dbPath = path.resolve(config.storage.dbPath);
-  _db = new Database(dbPath);
+  _db = new DatabaseSync(dbPath);
 
-  _db.pragma('journal_mode = WAL');
-
+  _db.exec(`PRAGMA journal_mode = WAL`);
   _db.exec(`
     CREATE TABLE IF NOT EXISTS seen_jobs (
       id            TEXT PRIMARY KEY,
@@ -32,14 +31,12 @@ function isNew(id) {
 
 function markSeenBatch(ids) {
   if (ids.length === 0) return;
-  const insert = getDb().prepare(
+  const db = getDb();
+  const insert = db.prepare(
     'INSERT OR IGNORE INTO seen_jobs (id, first_seen_at) VALUES (?, ?)'
   );
   const now = new Date().toISOString();
-  const insertAll = getDb().transaction((list) => {
-    for (const id of list) insert.run(id, now);
-  });
-  insertAll(ids);
+  for (const id of ids) insert.run(id, now);
 }
 
 function countSeen() {
